@@ -1,148 +1,72 @@
-# robocopy_sequential_transfer_tool
+# Robocopy Sequential Transfer Tool
 
-Robocopy Sequential Transfer Tool
+A PowerShell script that automates multiple Robocopy file transfers with individual logging and smart exclusions.
 
-A PowerShell utility that performs controlled, sequential file transfers using Robocopy.
-This tool is designed to copy large datasets in a predictable, auditable manner, avoiding system saturation and reducing the risk of transfer failures during long-running copy operations.
+## Features
 
-It is well suited for digital forensics, incident response, lab operations, evidence staging, and large-scale data migrations where reliability matters more than raw speed.
+- **Sequential Transfers**: Processes multiple source/destination pairs one at a time
+- **Individual Logging**: Creates a unique timestamped log file for each transfer job
+- **System Folder Exclusions**: Automatically excludes `$RECYCLE.BIN` and `System Volume Information`
+- **Robust Copy Options**: Uses `/E`, `/Z`, `/J` flags for reliable transfers with resume capability
+- **Organized Logs**: All logs saved to a timestamped folder on your desktop
 
-What This Tool Does
+## Requirements
 
-Copies folders one at a time, not in parallel
+- Windows OS
+- PowerShell 5.0 or higher
+- Administrator privileges (recommended for full access)
 
-Uses Robocopy for resilient, restartable transfers
+## Usage
 
-Provides clear console output showing progress and status
+1. Open the script in a text editor
+2. Modify the `$Jobs` array (lines 30-34) with your source and destination paths:
 
-Creates transfer logs for documentation and review
+```powershell
+$Jobs = @(
+    @{ Src = "C:\Your\Source\Folder"; Dst = "D:\Your\Destination\Folder" }
+    @{ Src = "C:\Another\Source"; Dst = "E:\Another\Destination" }
+)
+```
 
-Reduces disk, network, and CPU contention during large jobs
+3. Run the script in PowerShell:
 
-Why Sequential Transfers
-
-Robocopy defaults to aggressive, high-performance behavior. While fast, this can cause:
-
-Disk thrashing
-
-Network congestion
-
-Incomplete or stalled transfers
-
-Reduced system responsiveness
-
-This script intentionally prioritizes stability, predictability, and documentation over maximum throughput.
-
-Requirements
-
-Windows 10 or newer
-
-PowerShell 5.1 or PowerShell 7+
-
-Robocopy (included with Windows)
-
-Script Overview
-
-The script:
-
-Enumerates source directories
-
-Copies each directory individually to the destination
-
-Waits for each Robocopy job to complete before starting the next
-
-Logs output for each transfer
-
-Continues even if a single folder encounters errors
-
-Usage
-1. Download the Script
-
-Clone the repository or download the script directly:
-
-robocopy_sequential_transfer_tool.ps1
-
-2. Edit the Script Configuration
-
-Open the script in a text editor and configure:
-
-Source path
-
-Destination path
-
-Optional Robocopy switches
-
-Log file location
-
-Example configuration block:
-
-$SourceRoot = "E:\Evidence"
-$DestinationRoot = "F:\Staging"
-$LogRoot = "F:\Logs"
-
-3. Run the Script
-
-From an elevated PowerShell session:
-
+```powershell
 .\robocopy_sequential_transfer_tool.ps1
+```
 
+## Robocopy Parameters
 
-If script execution is blocked:
+The script uses the following Robocopy flags:
 
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+- `/E` - Copy subdirectories, including empty ones
+- `/R:3` - Retry 3 times on failed copies
+- `/W:5` - Wait 5 seconds between retries
+- `/Z` - Copy in restartable mode (resume interrupted transfers)
+- `/J` - Unbuffered I/O for large files
+- `/V` - Verbose output
+- `/TEE` - Output to console and log file
+- `/XD` - Exclude specified directories
 
-Logging and Output
+## Output
 
-Each directory transfer generates Robocopy output
+Logs are saved to: `%USERPROFILE%\Desktop\RoboLogs_[timestamp]\`
 
-Logs are saved per-folder for easy review
+Each job creates a log file named: `robocopy_[timestamp].txt`
 
-Console output shows:
+## Example Output
 
-Current folder
+```
+--- BATCH START: 20260106_1715 ---
+Excluding: "$RECYCLE.BIN" "System Volume Information"
+Transferring: C:\Path\To\Source1
+Finished. Log: robocopy_20260106_171501.txt
+--------------------------------------------
+Transferring: C:\Path\To\Source2
+Finished. Log: robocopy_20260106_171523.txt
+--------------------------------------------
+ALL JOBS COMPLETE. Logs in: C:\Users\...\Desktop\RoboLogs_20260106_1715
+```
 
-Transfer start and completion
+## License
 
-Exit codes
-
-Robocopy exit codes are preserved for troubleshooting.
-
-Common Robocopy Options Used
-
-Depending on configuration, the script may include options such as:
-
-/E – Copy subdirectories, including empty ones
-
-/Z – Restartable mode
-
-/R and /W – Retry behavior
-
-/LOG – Write output to log files
-
-/TEE – Output to console and log
-
-These can be customized based on operational needs.
-
-Use Cases
-
-Digital forensic evidence staging
-
-Large dataset migrations
-
-Incident response data collection
-
-Offline lab transfers
-
-Long-running unattended copy jobs
-
-Situations requiring audit-friendly logs
-
-Design Philosophy
-
-We do not rush transfers
-
-We do not overload systems
-
-We prioritize reliability and documentation
-
-We allow failures to be visible, not hidden
+Free to use and modify for your needs.
